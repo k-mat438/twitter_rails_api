@@ -45,8 +45,8 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address: 'host.docker.internal',
     port: 1025,
-    user_name: ENV['GMAIL_ADDRESS'],
-    password: ENV['GMAIL_PASSWORD'],
+    user_name: ENV.fetch('GMAIL_ADDRESS', nil),
+    password: ENV.fetch('GMAIL_PASSWORD', nil),
     authentication: :plain,
     enable_starttls_auto: true
   }

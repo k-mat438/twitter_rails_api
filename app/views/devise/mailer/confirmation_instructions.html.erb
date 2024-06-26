@@ -1,0 +1,11 @@
+<p><%= t('.greeting', recipient: @email) %></p>
+
+<p><%= t('.instruction') %></p>
+
+<p><%= link_to t('.action'),
+   "#{message['redirect-url']}?confirmation_token=#{@token}" %></p>
+
+<p><%= t('.instruction_2') %></p>
+<p><%= t('.instruction_3') %></p>
+
+<p><%= t('.thanks') %></p>

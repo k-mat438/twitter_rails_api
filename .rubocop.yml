@@ -8,3 +8,15 @@ AllCops:
   NewCops: enable
 RSpec/MultipleExpectations:
   Max: 2
+
+
+Metrics/MethodLength:
+  Exclude:
+    - 'db/migrate/20240617032413_devise_token_auth_create_users.rb'
+Metrics/AbcSize:
+  Exclude:
+    - 'db/migrate/20240617032413_devise_token_auth_create_users.rb'
+Metrics/BlockLength:
+  Exclude:
+    - 'config/environments/development.rb'
+    - 'config/environments/production.rb'

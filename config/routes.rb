@@ -8,6 +8,9 @@ Rails.application.routes.draw do
         confirmations: 'api/v1/confirmations'
       }
       resources :tweets, only: [:index]
+      namespace :auth do
+        resources :sessions, only: [:index]
+      end
     end
   end
 

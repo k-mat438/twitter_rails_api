@@ -9,6 +9,7 @@ DeviseTokenAuth.setup do |config|
 
   # By default, users will need to re-authenticate after 2 weeks. This setting
   # determines how long tokens will remain valid after they are issued.
+  config.change_headers_on_each_request = false
   config.token_lifespan = 2.weeks
 
   # config.default_confirm_success_url = 'http://localhost:3001/'

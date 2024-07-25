@@ -7,7 +7,8 @@ Rails.application.routes.draw do
         registrations: 'api/v1/users',
         confirmations: 'api/v1/confirmations'
       }
-      resources :tweets, only: [:index]
+      resources :tweets, only: %i[index create]
+      resources :images, only: %i[create]
       namespace :auth do
         resources :sessions, only: [:index]
       end

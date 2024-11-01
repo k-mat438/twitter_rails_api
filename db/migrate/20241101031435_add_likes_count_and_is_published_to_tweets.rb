@@ -2,7 +2,9 @@
 
 class AddLikesCountAndIsPublishedToTweets < ActiveRecord::Migration[7.0]
   def change
-    add_column :tweets, :likes_count, :integer
-    add_column :tweets, :is_published, :boolean
+    change_table :tweets, bulk: true do |t|
+      t.integer :likes_count, default: 0, null: false
+      t.boolean :is_published, default: false, null: false
+    end
   end
 end

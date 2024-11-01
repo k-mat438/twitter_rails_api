@@ -4,7 +4,7 @@ on:
     paths:
       - 'db/migrate/**'
       - 'db/schema.rb'
-      # - 'db/structure.sql'
+      - 'db/structure.sql'
 
 jobs:
   tbls:
@@ -38,7 +38,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2.1'  # Railsプロジェクトで使用しているRubyのバージョンに変更してください
+          ruby-version: '3.2.1'
           bundler-cache: true
 
       - name: Install PostgreSQL client
@@ -48,9 +48,10 @@ jobs:
 
       - name: Install tbls
         run: |
-          curl -L https://git.io/tbls > tbls
-          chmod +x tbls
-          sudo mv tbls /usr/local/bin
+          wget https://github.com/k1LoW/tbls/releases/download/v1.67.0/tbls_v1.67.0_linux_amd64.tar.gz
+          tar zxvf tbls_v1.67.0_linux_amd64.tar.gz
+          sudo mv tbls /usr/local/bin/
+          tbls version
 
       - name: Install dependencies
         run: |

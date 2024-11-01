@@ -31,16 +31,57 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    # steps:
-    #   - name: Checkout code
-    #     uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
-    #   - name: Setup tbls
-    #     uses: ./path-to-your-tbls-action
-    #     with:
-    #       version: 'latest'  # 任意のバージョンを指定可能
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: true
 
-    #   - name: Generate DB schema docs
-    #     run: |
-    #       mkdir -p db/schema
-    #       tbls doc postgresql://postgres:password@localhost:5432/myapp_test?sslmode=disable ./db/schema
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install tbls
+        run: |
+          wget https://github.com/k1LoW/tbls/releases/download/v1.67.0/tbls_v1.67.0_linux_amd64.tar.gz
+          tar zxvf tbls_v1.67.0_linux_amd64.tar.gz
+          sudo mv tbls /usr/local/bin/
+          tbls version
+
+      - name: Install dependencies
+        run: |
+          bundle install
+
+      - name: Database setup
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
+
+      - name: Generate schema document
+        run: |
+          mkdir -p db/schema
+          tbls doc "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema
+
+      - name: Check schema changes
+        run: |
+          tbls diff "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema || true
+
+      - name: Commit schema documentation
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add db/schema
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update schema documentation" || true
+          
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}

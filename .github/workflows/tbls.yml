@@ -1,0 +1,71 @@
+name: Check DB Schema Changes
+on:
+  pull_request:
+    paths:
+      - 'db/migrate/**'
+      - 'db/schema.rb'
+      # - 'db/structure.sql'
+
+jobs:
+  tbls:
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+      POSTGRES_HOST: localhost
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/myapp_test
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: myapp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.1'  # Railsプロジェクトで使用しているRubyのバージョンに変更してください
+          bundler-cache: true
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install tbls
+        run: |
+          curl -L https://git.io/tbls > tbls
+          chmod +x tbls
+          sudo mv tbls /usr/local/bin
+
+      - name: Install dependencies
+        run: |
+          bundle install
+
+      - name: Database setup
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
+
+      - name: Generate schema document
+        run: |
+          mkdir -p db/schema
+          tbls doc "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema
+
+      - name: Check schema changes
+        run: |
+          tbls diff "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema || true

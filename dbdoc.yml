@@ -1,0 +1,11 @@
+version: "1.0"
+dsn: postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable
+docPath: ./db/schema
+lint:
+  requireColumnComment:
+    enabled: true
+  requireTableComment:
+    enabled: true
+  columnCount:
+    enabled: true
+    max: 50

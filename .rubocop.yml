@@ -22,3 +22,4 @@ Metrics/BlockLength:
   Exclude:
     - 'config/environments/development.rb'
     - 'config/environments/production.rb'
+    - 'db/seeds.rb'

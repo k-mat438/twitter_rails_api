@@ -1,0 +1,92 @@
+name: Check DB Schema Changes
+on:
+  pull_request:
+    paths:
+      - 'db/migrate/**'
+      - 'db/schema.rb'
+      - 'db/structure.sql'
+
+# 権限設定を追加
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  tbls:
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+      POSTGRES_HOST: localhost
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/myapp_test
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: myapp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.1'
+          bundler-cache: true
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install tbls
+        run: |
+          wget https://github.com/k1LoW/tbls/releases/download/v1.67.0/tbls_v1.67.0_linux_amd64.tar.gz
+          tar zxvf tbls_v1.67.0_linux_amd64.tar.gz
+          sudo mv tbls /usr/local/bin/
+          tbls version
+
+      - name: Install dependencies
+        run: |
+          bundle install
+
+      - name: Database setup
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
+
+      - name: Generate schema document
+        run: |
+          mkdir -p db/schema
+          tbls doc "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema
+
+      - name: Check schema changes
+        run: |
+          tbls diff "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema || true
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add db/schema
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update schema documentation"
+            git push
+          fi

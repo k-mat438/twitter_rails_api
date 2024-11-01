@@ -33,40 +33,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup tbls
+        uses: ./path-to-your-tbls-action
         with:
-          ruby-version: '3.2.1'
-          bundler-cache: true
+          version: 'latest'  # 任意のバージョンを指定可能
 
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Install tbls
-        run: |
-          wget https://github.com/k1LoW/tbls/releases/download/v1.67.0/tbls_v1.67.0_linux_amd64.tar.gz
-          tar zxvf tbls_v1.67.0_linux_amd64.tar.gz
-          sudo mv tbls /usr/local/bin/
-          tbls version
-
-      - name: Install dependencies
-        run: |
-          bundle install
-
-      - name: Database setup
-        run: |
-          bundle exec rails db:create
-          bundle exec rails db:migrate
-
-      - name: Generate schema document
+      - name: Generate DB schema docs
         run: |
           mkdir -p db/schema
-          tbls doc "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema
-
-      - name: Check schema changes
-        run: |
-          tbls diff "postgres://postgres:password@localhost:5432/myapp_test?sslmode=disable" ./db/schema || true
+          tbls doc postgresql://postgres:password@localhost:5432/myapp_test?sslmode=disable ./db/schema

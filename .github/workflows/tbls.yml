@@ -31,16 +31,16 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # steps:
+    #   - name: Checkout code
+    #     uses: actions/checkout@v3
 
-      - name: Setup tbls
-        uses: ./path-to-your-tbls-action
-        with:
-          version: 'latest'  # 任意のバージョンを指定可能
+    #   - name: Setup tbls
+    #     uses: ./path-to-your-tbls-action
+    #     with:
+    #       version: 'latest'  # 任意のバージョンを指定可能
 
-      - name: Generate DB schema docs
-        run: |
-          mkdir -p db/schema
-          tbls doc postgresql://postgres:password@localhost:5432/myapp_test?sslmode=disable ./db/schema
+    #   - name: Generate DB schema docs
+    #     run: |
+    #       mkdir -p db/schema
+    #       tbls doc postgresql://postgres:password@localhost:5432/myapp_test?sslmode=disable ./db/schema
